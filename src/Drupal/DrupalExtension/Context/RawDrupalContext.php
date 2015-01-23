@@ -7,9 +7,11 @@ use Behat\Testwork\Hook\HookDispatcher;
 
 use Drupal\DrupalDriverManager;
 
+use Drupal\DrupalExtension\Hook\Scope\AfterLanguageEnableScope;
 use Drupal\DrupalExtension\Hook\Scope\AfterNodeCreateScope;
 use Drupal\DrupalExtension\Hook\Scope\AfterTermCreateScope;
 use Drupal\DrupalExtension\Hook\Scope\AfterUserCreateScope;
+use Drupal\DrupalExtension\Hook\Scope\BeforeLanguageEnableScope;
 use Drupal\DrupalExtension\Hook\Scope\BeforeNodeCreateScope;
 use Drupal\DrupalExtension\Hook\Scope\BeforeUserCreateScope;
 use Drupal\DrupalExtension\Hook\Scope\BeforeTermCreateScope;
@@ -77,6 +79,13 @@ class RawDrupalContext extends RawMinkContext implements DrupalAwareInterface {
    * @var array
    */
   protected $roles = array();
+
+  /**
+   * Keep track of any languages that are created so they can easily be removed.
+   *
+   * @var array
+   */
+  protected $languages = array();
 
   /**
    * {@inheritDoc}
@@ -201,6 +210,19 @@ class RawDrupalContext extends RawMinkContext implements DrupalAwareInterface {
   }
 
   /**
+   * Remove any created languages.
+   *
+   * @AfterScenario
+   */
+  public function cleanLanguages() {
+    // Delete any languages that were created.
+    foreach ($this->languages as $language) {
+      $this->getDriver()->languageDelete($language);
+      unset($this->languages[$language->langcode]);
+    }
+  }
+
+  /**
    * Dispatch scope hooks.
    *
    * @param string $scope
@@ -262,6 +284,20 @@ class RawDrupalContext extends RawMinkContext implements DrupalAwareInterface {
     $this->dispatchHooks('AfterTermCreateScope', $saved);
     $this->terms[] = $saved;
     return $saved;
+  }
+
+  /**
+   * Creates a language.
+   *
+   * @param \stdClass $language
+   *   An object with the following properties:
+   *   - langcode: the langcode of the language to create.
+   */
+  public function languageCreate(\stdClass $language) {
+    $this->dispatchHooks('BeforeLanguageCreateScope', $language);
+    $this->getDriver()->languageCreate($language);
+    $this->dispatchHooks('AfterLanguageCreateScope', $language);
+    $this->languages[$language->langcode] = $language;
   }
 
   /**
