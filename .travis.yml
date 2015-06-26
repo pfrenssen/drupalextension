@@ -20,8 +20,8 @@ before_script:
   - echo "sendmail_path='true'" >> `php --ini | grep "Loaded Configuration" | awk '{print $4}'`
   # Setup a stack Drupal 6 install to test api abilities.
   - mysql -e 'create database drupal6'
-  - drush --verbose dl drupal-6 --drupal-project-rename=drupal6
-  - drush --yes --root=$PWD/drupal6 site-install --db-url=mysql://travis:@127.0.0.1/drupal6
+  - drush --quiet dl drupal-6 --drupal-project-rename=drupal6
+  - drush --yes --root=$PWD/drupal6 site-install --db-url=mysqli://travis:@127.0.0.1/drupal6
   - cp -r fixtures/drupal6/modules/behat_test drupal6/sites/all/modules
   - cd drupal6
   - drush --yes en behat_test
@@ -32,7 +32,7 @@ before_script:
   # Setup a stock Drupal 7 install to test api abilities.
   - mysql -e 'create database drupal7'
   - drush --quiet dl drupal-7 --drupal-project-rename=drupal7
-  - drush --yes --root=$PWD/drupal7 site-install --db-url=mysql://travis:@127.0.0.1/drupal7
+  - drush --yes --root=$PWD/drupal7 site-install --db-url=mysqli://travis:@127.0.0.1/drupal7
   - cp -r fixtures/drupal7/modules/behat_test drupal7/sites/all/modules
   - cd drupal7
   - drush --yes en behat_test
@@ -43,7 +43,7 @@ before_script:
   # Setup a stock Drupal 8 install to test api abilities.
   - mysql -e 'create database drupal8'
   - (cd drupal8 && git pull && cd -) || git clone --branch 8.0.x http://git.drupal.org/project/drupal.git drupal8
-  - drush --yes --root=$PWD/drupal8 site-install --db-url=mysql://travis:@127.0.0.1/drupal8
+  - drush --yes --root=$PWD/drupal8 site-install --db-url=mysqli://travis:@127.0.0.1/drupal8
   - cp -r fixtures/drupal8/modules/behat_test drupal8/modules
   - cd drupal8
   - drush --yes en behat_test
